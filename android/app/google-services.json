@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "271442909805",
+    "project_id": "application-mappital",
+    "storage_bucket": "application-mappital.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:271442909805:android:b320379cccaee0e0053d64",
+        "android_client_info": {
+          "package_name": "com.example.application_mappital"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "271442909805-2odd28bf9fgpuefpf1oe62jfr4su294n.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBS3FvHM8ibmrnJoOS1-PeCHIP7V2fhYak"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "271442909805-2odd28bf9fgpuefpf1oe62jfr4su294n.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
