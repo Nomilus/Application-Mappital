@@ -12,11 +12,13 @@ class ProfileScreen extends StatelessWidget {
     ThemeData theme = Theme.of(context);
 
     return Scaffold(
-      backgroundColor: theme.colorScheme.surfaceContainerLowest,
       appBar: AppBar(
-        title: const Text("Profile"),
-        actions: const [],
-        backgroundColor: theme.colorScheme.surfaceContainerLowest,
+        automaticallyImplyLeading: false,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_rounded),
+          onPressed: () => Get.back(),
+        ),
+        title: const Text("โปรไฟล์"),
       ),
       body: SafeArea(
         child: ListView(
@@ -50,11 +52,24 @@ class ProfileScreen extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.start,
               children: [
                 _buildItemListButton(
-                  theme: theme,
-                  title: "Dark Mode",
+                  context: context,
+                  title: "เพิ่มโรงพยาบาล",
+                  content: "คุณสามารถเพิ่มข้อมูลโรงพยาบาลใหม่ลงในระบบได้",
+                  prefix: IconButton(
+                    onPressed: () => Get.toNamed('/form'),
+                    icon: const Icon(Icons.arrow_forward_ios_rounded),
+                  ),
+                ),
+                _buildItemListButton(
+                  context: context,
+                  title: "โหมดมืด",
                   content: "เปลี่ยนโหมดการแสดงผลเป็นสีเข้ม",
-                  value: controller.isDarkMode,
-                  callback: (value) => controller.toggleTheme(value),
+                  prefix: Obx(
+                    () => Switch(
+                      value: controller.isDarkMode.value,
+                      onChanged: (value) => controller.toggleTheme(value),
+                    ),
+                  ),
                 ),
                 _buildSignOutButton(theme: theme),
               ],
@@ -66,20 +81,22 @@ class ProfileScreen extends StatelessWidget {
   }
 
   Widget _buildItemListButton({
-    required ThemeData theme,
+    required BuildContext context,
     required String title,
     required String content,
-    required RxBool value,
-    required Function(bool value) callback,
+    Widget? prefix,
   }) {
+    ThemeData theme = Theme.of(context);
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      alignment: Alignment.center,
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(5),
+        borderRadius: BorderRadius.circular(6),
         color: theme.colorScheme.surfaceContainerLow,
       ),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Expanded(
             flex: 1,
@@ -91,11 +108,14 @@ class ProfileScreen extends StatelessWidget {
               ],
             ),
           ),
-          Expanded(
-            flex: 0,
-            child: Padding(
-              padding: const EdgeInsets.only(left: 10),
-              child: Obx(() => Switch(value: value.value, onChanged: callback)),
+          Visibility(
+            visible: prefix != null,
+            child: Expanded(
+              flex: 0,
+              child: Padding(
+                padding: const EdgeInsets.only(left: 10),
+                child: prefix,
+              ),
             ),
           ),
         ],

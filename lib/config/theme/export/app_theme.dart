@@ -5,6 +5,7 @@ import 'package:application_mappital/config/theme/custom/theme_color.dart';
 import 'package:application_mappital/config/theme/custom/theme_font.dart';
 import 'package:application_mappital/config/theme/custom/theme_input.dart';
 import 'package:application_mappital/config/theme/custom/theme_list.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme {
   AppTheme({required this.context}) {
@@ -33,9 +34,14 @@ class AppTheme {
         seedColor: _themeColor.seed,
         error: _themeColor.error,
         brightness: brightness,
+        dynamicSchemeVariant: DynamicSchemeVariant.rainbow,
       ),
+      fontFamily: GoogleFonts.roboto().fontFamily,
+      fontFamilyFallback: [GoogleFonts.kanit().fontFamily!],
       appBarTheme: _themeAppBar.appBarTheme,
       elevatedButtonTheme: _themeButton.elevatedButtonTheme,
+      outlinedButtonTheme: _themeButton.outlinedButtonTheme,
+      floatingActionButtonTheme: _themeButton.floatingActionButtonTheme,
       textTheme: _themeFont.textTheme,
       inputDecorationTheme: _themeInput.inputDecorationTheme,
       listTileTheme: _themeList.listTileTheme,

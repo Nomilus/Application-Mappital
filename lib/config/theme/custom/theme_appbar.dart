@@ -9,5 +9,6 @@ class ThemeAppBar {
     // color: Colors.transparent,
     // shadowColor: Colors.transparent,
     // surfaceTintColor: Colors.transparent,
+    scrolledUnderElevation: 4,
   );
 }

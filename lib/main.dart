@@ -30,6 +30,7 @@ class MainApp extends StatelessWidget {
       builder: (context, snapshot) {
         return GetMaterialApp(
           debugShowCheckedModeBanner: false,
+          defaultTransition: Transition.fadeIn,
           getPages: AppRouter().getRoute,
           themeMode: snapshot.data! ? ThemeMode.dark : ThemeMode.light,
           theme: AppTheme(context: context).getLightTheme,

@@ -11,7 +11,6 @@ class HospitalModel {
   final List<String> images;
   final HospitalType type;
   final String phoneNumber;
-  final bool isVerified;
   final DateTime? createdAt;
   final DateTime? updatedAt;
 
@@ -28,7 +27,6 @@ class HospitalModel {
     required this.images,
     required this.type,
     required this.phoneNumber,
-    this.isVerified = false,
     this.createdAt,
     this.updatedAt,
   });
@@ -47,7 +45,6 @@ class HospitalModel {
       images: List<String>.from(json['images'] as List),
       type: _parseHospitalType(json['type'] as String),
       phoneNumber: json['phone_number'] as String,
-      isVerified: json['is_verified'] ?? false,
       createdAt: DateTime.parse(json['created_at'] as String),
       updatedAt: DateTime.parse(json['updated_at'] as String),
     );

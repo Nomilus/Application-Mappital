@@ -1,3 +1,4 @@
+import 'package:application_mappital/view/screen/form_screen.dart';
 import 'package:application_mappital/view/screen/home_screen.dart';
 import 'package:application_mappital/view/screen/auth_screen.dart';
 import 'package:application_mappital/view/screen/profile_screen.dart';
@@ -8,5 +9,6 @@ class AppRouter {
     GetPage(name: "/auth", page: () => AuthScreen()),
     GetPage(name: "/home", page: () => HomeScreen()),
     GetPage(name: "/profile", page: () => ProfileScreen()),
+    GetPage(name: "/form", page: () => FormScreen()),
   ];
 }

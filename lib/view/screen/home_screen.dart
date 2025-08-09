@@ -1,5 +1,5 @@
+import 'package:application_mappital/view/widget/search_widget.dart';
 import 'package:flutter/material.dart';
-import 'package:application_mappital/config/mock/hospital_mock.dart';
 import 'package:application_mappital/view/event/home_controller.dart';
 import 'package:application_mappital/view/widget/drawer_widget.dart';
 import 'package:application_mappital/view/widget/end_drawer_widget.dart';
@@ -17,14 +17,14 @@ class HomeScreen extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: theme.colorScheme.surfaceContainerLowest,
+      resizeToAvoidBottomInset: false,
       drawer: DrawerWidget(
         userProfileOnPressed: () => Get.toNamed("/profile"),
-        hospitalList: mockHospitalList,
         onTap: controller.moveToLocation,
-        reload: () async {},
       ),
       endDrawer: const EndDrawerWidget(notifications: []),
       body: SafeArea(
+        bottom: false,
         child: Stack(
           children: [
             Positioned.fill(child: _buildGoogleMap()),
@@ -37,7 +37,7 @@ class HomeScreen extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 4),
                 constraints: const BoxConstraints(maxHeight: 50),
                 decoration: BoxDecoration(
-                  color: theme.colorScheme.surfaceContainerLowest,
+                  color: theme.colorScheme.surface,
                   borderRadius: BorderRadius.circular(100),
                 ),
                 child: Row(
@@ -50,21 +50,12 @@ class HomeScreen extends StatelessWidget {
                           icon: const Icon(Icons.menu_rounded),
                           style: IconButton.styleFrom(
                             backgroundColor:
-                                theme.colorScheme.surfaceContainerHigh,
+                                theme.colorScheme.surfaceContainerLow,
                           ),
                         ),
                       ),
                     ),
-                    Expanded(
-                      flex: 1,
-                      child: Container(
-                        padding: const EdgeInsets.all(6),
-                        decoration: BoxDecoration(
-                          color: theme.colorScheme.surfaceContainerHigh,
-                          borderRadius: BorderRadius.circular(100),
-                        ),
-                      ),
-                    ),
+                    const Expanded(flex: 1, child: SearchWidget()),
                     Expanded(
                       flex: 0,
                       child: Builder(
@@ -73,7 +64,7 @@ class HomeScreen extends StatelessWidget {
                           icon: const Icon(Icons.notifications),
                           style: IconButton.styleFrom(
                             backgroundColor:
-                                theme.colorScheme.surfaceContainerHigh,
+                                theme.colorScheme.surfaceContainerLow,
                           ),
                         ),
                       ),
@@ -88,47 +79,26 @@ class HomeScreen extends StatelessWidget {
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       floatingActionButton: FloatingActionButton(
         heroTag: "location",
-        shape: const CircleBorder(),
         onPressed: controller.moveToSelfLocation,
-        backgroundColor: theme.colorScheme.surfaceContainerHigh,
+        backgroundColor: theme.colorScheme.surfaceContainerLow,
         child: const Icon(Icons.my_location),
       ),
     );
   }
 
   Widget _buildGoogleMap() {
-    return SizedBox.expand(
-      child: Stack(
-        children: [
-          Positioned.fill(
-            child: GoogleMap(
-              onMapCreated: (value) => controller.mapController(value),
-              initialCameraPosition: const CameraPosition(
-                target: LatLng(13.7563, 100.5018),
-                zoom: 11,
-              ),
-              markers: controller.markers.value ?? {},
-              myLocationEnabled: true,
-              myLocationButtonEnabled: false,
-              zoomControlsEnabled: false,
-            ),
-          ),
-          Obx(() {
-            if (controller.isLoading.value) {
-              return Positioned.fill(
-                child: Container(
-                  alignment: Alignment.center,
-                  decoration: BoxDecoration(
-                    color: Colors.black.withAlpha((0.2 * 255).toInt()),
-                  ),
-                  child: const CircularProgressIndicator(),
-                ),
-              );
-            }
-            return const SizedBox();
-          }),
-        ],
+    return GoogleMap(
+      onMapCreated: (value) => controller.mapController(value),
+      initialCameraPosition: const CameraPosition(
+        target: LatLng(13.7563, 100.5018),
+        zoom: 11,
       ),
+      markers: controller.markers.value ?? {},
+      myLocationEnabled: true,
+      myLocationButtonEnabled: false,
+      zoomControlsEnabled: false,
+      rotateGesturesEnabled: false,
+      mapToolbarEnabled: false,
     );
   }
 }

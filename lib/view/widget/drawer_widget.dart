@@ -9,13 +9,13 @@ class DrawerWidget extends StatelessWidget {
     super.key,
     this.userProfileOnPressed,
     this.hospitalList = const <HospitalModel>[],
-    required this.reload,
+    this.reload,
     required this.onTap,
   });
 
   final void Function()? userProfileOnPressed;
   final List<HospitalModel> hospitalList;
-  final Future<void> Function() reload;
+  final Future<void> Function()? reload;
   final void Function(LatLng location) onTap;
 
   final AuthService _authService = Get.find<AuthService>();
@@ -25,72 +25,81 @@ class DrawerWidget extends StatelessWidget {
     ThemeData theme = Theme.of(context);
 
     return Drawer(
-      backgroundColor: theme.colorScheme.surfaceContainerLowest,
-      child: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(6),
+      child: Scaffold(
+        appBar: AppBar(
+          surfaceTintColor: Colors.transparent,
+          backgroundColor: theme.colorScheme.surface,
+          title: const Text('Mappital'),
+        ),
+        body: SafeArea(
           child: Column(
             children: [
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(10),
-                alignment: Alignment.centerLeft,
-                child: Text('Mappital', style: theme.textTheme.headlineSmall),
-              ),
               Expanded(
                 child: RefreshIndicator(
-                  onRefresh: reload,
-                  child: ListView(
-                    physics: const BouncingScrollPhysics(),
-                    padding: const EdgeInsets.all(6),
-                    children: List.generate(
-                      hospitalList.length,
-                      (index) => Padding(
-                        padding: const EdgeInsets.only(bottom: 6),
-                        child: _buildItemList(
-                          hospital: hospitalList[index],
-                          theme: theme,
-                        ),
-                      ),
+                  onRefresh:
+                      reload ??
+                      () async {
+                        await Future.delayed(const Duration(seconds: 2));
+                      },
+                  child: Visibility(
+                    visible: hospitalList.isNotEmpty,
+                    child: ListView.builder(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      physics: const BouncingScrollPhysics(),
+                      itemCount: hospitalList.length,
+                      itemBuilder: (context, index) {
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 6),
+                          child: _buildItemList(
+                            hospital: hospitalList[index],
+                            theme: theme,
+                          ),
+                        );
+                      },
                     ),
                   ),
                 ),
               ),
-              TextButton(
-                onPressed: userProfileOnPressed,
-                style: TextButton.styleFrom(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(100),
+
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10),
+                decoration: BoxDecoration(color: theme.colorScheme.surface),
+                child: TextButton(
+                  onPressed: userProfileOnPressed,
+                  style: TextButton.styleFrom(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(100),
+                    ),
                   ),
-                ),
-                child: Obx(() {
-                  final userProfile = _authService.currentUser.value;
-                  return Row(
-                    children: [
-                      CircleAvatar(
-                        radius: 18,
-                        foregroundImage: NetworkImage(
-                          userProfile?.avatar ?? "",
+                  child: Obx(() {
+                    final userProfile = _authService.currentUser.value;
+                    return Row(
+                      children: [
+                        CircleAvatar(
+                          radius: 18,
+                          foregroundImage: NetworkImage(
+                            userProfile?.avatar ?? "",
+                          ),
+                          child: Text(userProfile?.name.substring(0, 1) ?? "N"),
                         ),
-                        child: Text(userProfile?.name.substring(0, 1) ?? "N"),
-                      ),
-                      const SizedBox(width: 12),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            userProfile?.name ?? "unknown",
-                            style: theme.textTheme.bodyMedium,
-                          ),
-                          Text(
-                            userProfile?.email ?? "-",
-                            style: theme.textTheme.bodySmall,
-                          ),
-                        ],
-                      ),
-                    ],
-                  );
-                }),
+                        const SizedBox(width: 12),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              userProfile?.name ?? "unknown",
+                              style: theme.textTheme.titleMedium,
+                            ),
+                            Text(
+                              userProfile?.email ?? "-",
+                              style: theme.textTheme.bodySmall,
+                            ),
+                          ],
+                        ),
+                      ],
+                    );
+                  }),
+                ),
               ),
             ],
           ),

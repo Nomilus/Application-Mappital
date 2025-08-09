@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-
 class ThemeFont {
   ThemeFont({required this.context});
 
@@ -25,6 +23,6 @@ class ThemeFont {
   );
 
   TextStyle _textStyle(double fontSize, FontWeight fontWeight) {
-    return GoogleFonts.kanit(fontSize: fontSize, fontWeight: fontWeight);
+    return TextStyle(fontSize: fontSize, fontWeight: fontWeight);
   }
 }

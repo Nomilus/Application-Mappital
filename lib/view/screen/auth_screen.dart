@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:application_mappital/view/event/auth_controller.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 
@@ -25,6 +26,7 @@ class AuthScreen extends StatelessWidget {
                       theme.colorScheme.primaryContainer,
                       theme.colorScheme.primary,
                     ],
+                    center: Alignment.bottomLeft.add(Alignment.bottomRight),
                     tileMode: TileMode.mirror,
                   ),
                 ),
@@ -59,9 +61,18 @@ class AuthScreen extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Text(
-            'Mappital',
-            style: theme.textTheme.displaySmall?.apply(color: Colors.white),
-          ),
+                'Mappital',
+                style: theme.textTheme.displaySmall?.apply(color: Colors.white),
+              )
+              .animate(onPlay: (controller) => controller.repeat())
+              .shimmer(
+                colors: [
+                  theme.colorScheme.primary,
+                  theme.colorScheme.primaryContainer,
+                  theme.colorScheme.primary,
+                ],
+                duration: const Duration(seconds: 2),
+              ),
           const SizedBox(width: 8),
           Text(
             'คือผู้ช่วยฉุกเฉินส่วนตัว ที่ออกแบบมาเพื่อช่วยเหลือคุณในเวลาสำคัญ! เราให้คุณสามารถค้นหา โรงพยาบาลที่อยู่ใกล้ที่สุด ได้ทันที พร้อมระบบ SOS แจ้งเตือนฉุกเฉิน ที่ทำให้คุณสามารถส่งสัญญาณขอความช่วยเหลือได้อย่างรวดเร็ว',

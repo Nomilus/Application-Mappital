@@ -10,7 +10,7 @@ final mockHospitalList = [
     latitude: 34.055235,
     longitude: -118.245683,
     opening: '07:00',
-    closing: '22:00',
+    closing: '12:00',
     images: [
       'https://academichelp.net/wp-content/uploads/2012/12/best-hospital-in-south-india.jpg',
     ],

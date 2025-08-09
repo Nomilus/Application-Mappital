@@ -1,22 +1,21 @@
 import 'dart:async';
+import 'package:application_mappital/utility/snackbar_utility.dart';
 import 'package:dio/dio.dart';
 import 'package:get/get.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:application_mappital/private/service/local_service.dart';
 import 'package:application_mappital/public/model/user_model.dart';
 import 'package:application_mappital/public/repository/i_auth_service.dart';
 
 class AuthService extends GetxService implements IAuthService {
+  AuthService({required Dio dio}) : _dio = dio;
+
   final Dio _dio;
-  final LocalService _localService = Get.find<LocalService>();
   final GoogleSignIn _googleSignIn = GoogleSignIn.instance;
 
   final Rxn<UserModel> currentUser = Rxn<UserModel>();
   final RxBool isLoggedIn = RxBool(false);
 
   bool _isGoogleSignInInitialized = false;
-
-  AuthService({required Dio dio}) : _dio = dio;
 
   @override
   void onInit() {
@@ -35,24 +34,6 @@ class AuthService extends GetxService implements IAuthService {
     checkGoogleSignIn();
   }
 
-  void _handleSuccess(String message) {
-    Get.snackbar(
-      "Success",
-      message,
-      snackPosition: SnackPosition.TOP,
-      duration: const Duration(seconds: 2),
-    );
-  }
-
-  void _handleError(String message) {
-    Get.snackbar(
-      "Error",
-      message,
-      snackPosition: SnackPosition.TOP,
-      duration: const Duration(seconds: 2),
-    );
-  }
-
   void _setUser(GoogleSignInAccount account) {
     currentUser(
       UserModel(
@@ -60,7 +41,6 @@ class AuthService extends GetxService implements IAuthService {
         email: account.email,
         name: account.displayName ?? "unknown",
         avatar: account.photoUrl ?? "",
-        role: Role.user,
       ),
     );
   }
@@ -77,6 +57,14 @@ class AuthService extends GetxService implements IAuthService {
         } else {
           isLoggedIn(false);
         }
+      } on GoogleSignInException catch (e) {
+        if (e.code == GoogleSignInExceptionCode.canceled) {
+          SnackbarUtility.error(message: 'Cancel to sign in with Google');
+        } else {
+          SnackbarUtility.error(
+            message: 'Failed to sign in with Google: ${e.description}',
+          );
+        }
       } catch (e) {
         isLoggedIn(false);
       }
@@ -92,7 +80,7 @@ class AuthService extends GetxService implements IAuthService {
       );
       _isGoogleSignInInitialized = true;
     } catch (e) {
-      _handleError('Failed to initialize Google Sign-In: $e');
+      SnackbarUtility.error(message: 'Failed to initialize Google Sign-In: $e');
     }
   }
 
@@ -102,19 +90,28 @@ class AuthService extends GetxService implements IAuthService {
     if (_googleSignIn.supportsAuthenticate()) {
       try {
         GoogleSignInAccount account = await _googleSignIn.authenticate(
-          scopeHint: ['email', 'profile'],
+          scopeHint: ['email', 'profile', 'openid'],
         );
-        _localService.saveToken(account.authentication.idToken.toString());
         _setUser(account);
         isLoggedIn(true);
+        SnackbarUtility.success(message: 'Sign in successfully');
       } on GoogleSignInException catch (e) {
-        if (e.code == GoogleSignInExceptionCode.canceled) {
-          _handleError('Cancel to sign in with Google');
-        } else {
-          _handleError('Failed to sign in with Google: ${e.description}');
+        switch (e.code) {
+          case GoogleSignInExceptionCode.canceled:
+            SnackbarUtility.error(message: 'Sign in was cancelled');
+            break;
+          case GoogleSignInExceptionCode.unknownError:
+            SnackbarUtility.error(message: 'Sign in failed');
+            break;
+          default:
+            SnackbarUtility.error(
+              message: 'Failed to sign in with Google: ${e.description}',
+            );
         }
       } catch (e) {
-        _handleError('Unexpected error during Google Sign In');
+        SnackbarUtility.error(
+          message: 'Unexpected error during Google Sign In',
+        );
       }
     }
   }
@@ -124,7 +121,7 @@ class AuthService extends GetxService implements IAuthService {
     await _ensureGoogleSignInInitialized();
     await _googleSignIn.signOut();
     currentUser(null);
-    _handleSuccess('User signed out.');
+    SnackbarUtility.info(message: 'User signed out.');
   }
 
   @override
