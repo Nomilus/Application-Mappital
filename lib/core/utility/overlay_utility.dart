@@ -98,14 +98,26 @@ class OverlayUtility {
                   ),
                 ),
                 Positioned(
-                  top: 6,
-                  left: 6,
-                  child: IconButton(
-                    onPressed: () => hideOverlay(),
-                    icon: const Icon(Icons.close_rounded),
-                    style: IconButton.styleFrom(
-                      backgroundColor:
-                          Get.theme.colorScheme.surfaceContainerLow,
+                  top: 0,
+                  right: 0,
+                  child: Container(
+                    margin: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(100),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withAlpha((0.2 * 255).toInt()),
+                          blurRadius: 5,
+                        ),
+                      ],
+                    ),
+                    child: IconButton(
+                      onPressed: () => hideOverlay(),
+                      icon: const Icon(Icons.close),
+                      style: IconButton.styleFrom(
+                        backgroundColor:
+                            Get.theme.colorScheme.surfaceContainerLow,
+                      ),
                     ),
                   ),
                 ),
@@ -119,54 +131,5 @@ class OverlayUtility {
     _overlayEntry = overlayEntry;
 
     Overlay.of(Get.overlayContext!).insert(overlayEntry);
-  }
-
-  // static void _showOverlayNotification(File file) {
-  //   if (Get.overlayContext == null || _overlayEntry != null) {
-  //     return;
-  //   }
-
-  //   final overlayEntry = OverlayEntry(
-  //     builder: (context) {
-  //       return BackdropFilter(
-  //         filter: ImageFilter.blur(sigmaX: 7.0, sigmaY: 7.0),
-  //         child: SafeArea(
-  //           child: Stack(
-  //             children: [
-  //               Positioned.fill(
-  //                 child: Container(
-  //                   decoration: BoxDecoration(
-  //                     color: Get.theme.colorScheme.surfaceContainer,
-  //                     borderRadius: BorderRadius.circular(6)
-  //                   ),
-  //                   child: const Column(
-  //                     children: [
-  //                       Text("")
-  //                     ],
-  //                   ),
-  //                 ),
-  //               ),
-  //               Positioned(
-  //                 top: 6,
-  //                 left: 6,
-  //                 child: IconButton(
-  //                   onPressed: () => hideOverlay(),
-  //                   icon: const Icon(Icons.close_rounded),
-  //                   style: IconButton.styleFrom(
-  //                     backgroundColor:
-  //                         Get.theme.colorScheme.surfaceContainerLow,
-  //                   ),
-  //                 ),
-  //               ),
-  //             ],
-  //           ),
-  //         ),
-  //       );
-  //     },
-  //   );
-
-  //   _overlayEntry = overlayEntry;
-
-  //   Overlay.of(Get.overlayContext!).insert(overlayEntry);
-  // }
+  }  
 }

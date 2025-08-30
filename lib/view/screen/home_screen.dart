@@ -1,15 +1,18 @@
-import 'package:application_mappital/view/widget/search_widget.dart';
-import 'package:flutter/material.dart';
+import 'package:application_mappital/core/utility/sos_utility.dart';
+import 'package:application_mappital/view/event/drawer_controller.dart';
 import 'package:application_mappital/view/event/home_controller.dart';
 import 'package:application_mappital/view/widget/drawer_widget.dart';
-import 'package:application_mappital/view/widget/end_drawer_widget.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
+import 'package:flutter/material.dart' hide DrawerController;
 import 'package:get/get.dart';
 
 class HomeScreen extends StatelessWidget {
   HomeScreen({super.key});
 
   final HomeController controller = Get.put(HomeController());
+  final DrawerController drawerController = Get.put(DrawerController());
 
   @override
   Widget build(BuildContext context) {
@@ -18,58 +21,38 @@ class HomeScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: theme.colorScheme.surfaceContainerLowest,
       resizeToAvoidBottomInset: false,
-      drawer: DrawerWidget(
-        userProfileOnPressed: () => Get.toNamed("/profile"),
-        onTap: controller.moveToLocation,
-      ),
-      endDrawer: const EndDrawerWidget(notifications: []),
+      drawer: DrawerWidget(onTap: controller.moveToLocation),
       body: SafeArea(
         bottom: false,
         child: Stack(
           children: [
-            Positioned.fill(child: _buildGoogleMap()),
+            Positioned.fill(
+              child: Obx(() {
+                return _buildGoogleMap();
+              }),
+            ),
             Positioned(
               top: 0,
               left: 0,
-              right: 0,
               child: Container(
                 margin: const EdgeInsets.all(8),
-                padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 4),
-                constraints: const BoxConstraints(maxHeight: 50),
                 decoration: BoxDecoration(
-                  color: theme.colorScheme.surface,
                   borderRadius: BorderRadius.circular(100),
-                ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      flex: 0,
-                      child: Builder(
-                        builder: (context) => IconButton(
-                          onPressed: () => Scaffold.of(context).openDrawer(),
-                          icon: const Icon(Icons.menu_rounded),
-                          style: IconButton.styleFrom(
-                            backgroundColor:
-                                theme.colorScheme.surfaceContainerLow,
-                          ),
-                        ),
-                      ),
-                    ),
-                    const Expanded(flex: 1, child: SearchWidget()),
-                    Expanded(
-                      flex: 0,
-                      child: Builder(
-                        builder: (context) => IconButton(
-                          onPressed: () => Scaffold.of(context).openEndDrawer(),
-                          icon: const Icon(Icons.notifications),
-                          style: IconButton.styleFrom(
-                            backgroundColor:
-                                theme.colorScheme.surfaceContainerLow,
-                          ),
-                        ),
-                      ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withAlpha((0.2 * 255).toInt()),
+                      blurRadius: 5,
                     ),
                   ],
+                ),
+                child: Builder(
+                  builder: (context) => IconButton(
+                    onPressed: () => Scaffold.of(context).openDrawer(),
+                    icon: const Icon(Icons.menu_rounded),
+                    style: IconButton.styleFrom(
+                      backgroundColor: theme.colorScheme.surfaceContainerLow,
+                    ),
+                  ),
                 ),
               ),
             ),
@@ -77,11 +60,25 @@ class HomeScreen extends StatelessWidget {
         ),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
-      floatingActionButton: FloatingActionButton(
-        heroTag: "location",
-        onPressed: controller.moveToSelfLocation,
-        backgroundColor: theme.colorScheme.surfaceContainerLow,
-        child: const Icon(Icons.my_location),
+      floatingActionButton: Column(
+        spacing: 8,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          FloatingActionButton(
+            heroTag: "sos",
+            onPressed: () => SosUtility.showSos(),
+            foregroundColor: theme.iconTheme.color,
+            backgroundColor: theme.colorScheme.surfaceContainerLow,
+            child: const Icon(Icons.sos),
+          ),
+          FloatingActionButton(
+            heroTag: "location",
+            onPressed: controller.moveToSelfLocation,
+            foregroundColor: theme.iconTheme.color,
+            backgroundColor: theme.colorScheme.surfaceContainerLow,
+            child: const Icon(Icons.my_location),
+          ),
+        ],
       ),
     );
   }
@@ -89,10 +86,13 @@ class HomeScreen extends StatelessWidget {
   Widget _buildGoogleMap() {
     return GoogleMap(
       onMapCreated: (value) => controller.mapController(value),
-      initialCameraPosition: const CameraPosition(
-        target: LatLng(13.7563, 100.5018),
+      initialCameraPosition: CameraPosition(
+        target: Get.arguments ?? const LatLng(13.7563, 100.5018),
         zoom: 11,
       ),
+      gestureRecognizers: <Factory<OneSequenceGestureRecognizer>>{
+        Factory<PanGestureRecognizer>(() => PanGestureRecognizer()),
+      },
       markers: controller.markers.value ?? {},
       myLocationEnabled: true,
       myLocationButtonEnabled: false,

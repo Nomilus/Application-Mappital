@@ -1,13 +1,16 @@
-import 'package:application_mappital/config/const/app_dio.dart';
 import 'package:application_mappital/private/service/location_service.dart';
 import 'package:application_mappital/private/service/theme_service.dart';
 import 'package:application_mappital/public/service/auth_service.dart';
+import 'package:application_mappital/public/service/hospital_service.dart';
+import 'package:application_mappital/public/service/notification_service.dart';
 import 'package:get/get.dart';
 
 class AppGet {
-  void get getInit {
+  void get init {
     // Pubilc
-    Get.lazyPut(() => AuthService(dio: AppDio().getDio));
+    Get.lazyPut(() => AuthService());
+    Get.lazyPut(() => HospitalService());
+    Get.lazyPut(() => NotificationService());
 
     // Private
     Get.lazyPut(() => ThemeService());

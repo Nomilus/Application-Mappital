@@ -1,5 +1,5 @@
 import 'package:application_mappital/private/service/theme_service.dart';
-import 'package:application_mappital/public/model/user_model.dart';
+import 'package:application_mappital/core/model/user_model.dart';
 import 'package:application_mappital/public/service/auth_service.dart';
 import 'package:get/get.dart';
 

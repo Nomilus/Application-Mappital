@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:application_mappital/view/event/auth_controller.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 
@@ -18,26 +17,30 @@ class AuthScreen extends StatelessWidget {
         top: false,
         child: Stack(
           children: [
-            Positioned.fill(
-              child: Container(
-                decoration: BoxDecoration(
-                  gradient: RadialGradient(
-                    colors: [
-                      theme.colorScheme.primaryContainer,
-                      theme.colorScheme.primary,
-                    ],
-                    center: Alignment.bottomLeft.add(Alignment.bottomRight),
-                    tileMode: TileMode.mirror,
-                  ),
-                ),
-              ),
-            ),
+            Positioned.fill(child: Container(color: theme.colorScheme.primary)),
             Positioned(
               top: 0,
               bottom: 0,
               left: 0,
               right: 0,
               child: _buildContent(theme: theme),
+            ),
+            Positioned(
+              top: 8,
+              right: 8,
+              child: SafeArea(
+                child: IconButton(
+                  onPressed: () => controller.toggleTheme(),
+                  style: ButtonStyle(
+                    backgroundColor: WidgetStatePropertyAll(
+                      theme.colorScheme.surfaceContainerHigh,
+                    ),
+                  ),
+                  icon: controller.isDarkMode.value
+                      ? const Icon(Icons.dark_mode)
+                      : const Icon(Icons.light_mode),
+                ),
+              ),
             ),
           ],
         ),
@@ -49,9 +52,10 @@ class AuthScreen extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       alignment: Alignment.bottomCenter,
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [Colors.transparent, Colors.black],
+          colors: [Colors.transparent, theme.colorScheme.surfaceContainerLow],
+          stops: const [0, 0.8],
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
         ),
@@ -60,23 +64,11 @@ class AuthScreen extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(
-                'Mappital',
-                style: theme.textTheme.displaySmall?.apply(color: Colors.white),
-              )
-              .animate(onPlay: (controller) => controller.repeat())
-              .shimmer(
-                colors: [
-                  theme.colorScheme.primary,
-                  theme.colorScheme.primaryContainer,
-                  theme.colorScheme.primary,
-                ],
-                duration: const Duration(seconds: 2),
-              ),
+          Text('Mappital', style: theme.textTheme.displaySmall),
           const SizedBox(width: 8),
           Text(
-            'คือผู้ช่วยฉุกเฉินส่วนตัว ที่ออกแบบมาเพื่อช่วยเหลือคุณในเวลาสำคัญ! เราให้คุณสามารถค้นหา โรงพยาบาลที่อยู่ใกล้ที่สุด ได้ทันที พร้อมระบบ SOS แจ้งเตือนฉุกเฉิน ที่ทำให้คุณสามารถส่งสัญญาณขอความช่วยเหลือได้อย่างรวดเร็ว',
-            style: theme.textTheme.bodyMedium?.apply(color: Colors.white),
+            '\u0009คือผู้ช่วยฉุกเฉินส่วนตัว ที่ออกแบบมาเพื่อช่วยเหลือคุณในเวลาสำคัญ! เราให้คุณสามารถค้นหา โรงพยาบาลที่อยู่ใกล้ที่สุด ได้ทันที พร้อมระบบ SOS แจ้งเตือนฉุกเฉิน ที่ทำให้คุณสามารถส่งสัญญาณขอความช่วยเหลือได้อย่างรวดเร็ว',
+            style: theme.textTheme.bodyMedium,
           ),
           const SizedBox(height: 16),
           _buildSignInWithGoogleButton(theme: theme),
@@ -91,6 +83,11 @@ class AuthScreen extends StatelessWidget {
         width: double.infinity,
         child: ElevatedButton(
           onPressed: () => controller.submitSignInWithGoogle(),
+          style: ButtonStyle(
+            backgroundColor: WidgetStatePropertyAll(
+              theme.colorScheme.surfaceContainerHigh,
+            ),
+          ),
           child: controller.isLoading.value
               ? Padding(
                   padding: const EdgeInsets.symmetric(

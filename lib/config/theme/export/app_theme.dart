@@ -1,3 +1,4 @@
+import 'package:application_mappital/config/theme/custom/theme_searchbar.dart';
 import 'package:flutter/material.dart';
 import 'package:application_mappital/config/theme/custom/theme_appbar.dart';
 import 'package:application_mappital/config/theme/custom/theme_button.dart';
@@ -15,6 +16,7 @@ class AppTheme {
     _themeButton = ThemeButton(context: context);
     _themeInput = ThemeInput(context: context);
     _themeList = ThemeList(context: context);
+    _themeSearchbar = ThemeSearchbar(context: context);
   }
 
   final BuildContext context;
@@ -24,6 +26,7 @@ class AppTheme {
   late final ThemeButton _themeButton;
   late final ThemeInput _themeInput;
   late final ThemeList _themeList;
+  late final ThemeSearchbar _themeSearchbar;
 
   ThemeData get getLightTheme => _getTheme(Brightness.light);
   ThemeData get getDarkTheme => _getTheme(Brightness.dark);
@@ -45,6 +48,7 @@ class AppTheme {
       textTheme: _themeFont.textTheme,
       inputDecorationTheme: _themeInput.inputDecorationTheme,
       listTileTheme: _themeList.listTileTheme,
+      searchBarTheme: _themeSearchbar.searchBarTheme,
       useMaterial3: true,
     );
   }

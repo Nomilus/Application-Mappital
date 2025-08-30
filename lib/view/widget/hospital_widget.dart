@@ -1,20 +1,39 @@
-import 'package:application_mappital/utility/overlay_utility.dart';
+import 'package:application_mappital/core/utility/overlay_utility.dart';
 import 'package:flutter/material.dart';
-import 'package:application_mappital/public/model/hospital_model.dart';
-import 'package:application_mappital/view/event/hospital_controller.dart';
+import 'package:application_mappital/core/model/hospital_model.dart';
 import 'package:get/get.dart';
 
-class HospitalScreen extends StatelessWidget {
-  HospitalScreen({super.key, required this.hospital});
+class HospitalWidget extends StatelessWidget {
+  HospitalWidget({super.key, required this.hospital});
 
   final HospitalModel hospital;
-  final HospitalController controller = Get.put(HospitalController());
+  final RxBool showBorder = false.obs;
+
+  String _getHospitalTypeText(HospitalType type) {
+    switch (type) {
+      case HospitalType.government:
+        return "โรงพยาบาลรัฐ";
+      case HospitalType.private:
+        return "โรงพยาบาลเอกชน";
+      case HospitalType.university:
+        return "โรงพยาบาลมหาวิทยาลัย";
+      case HospitalType.community:
+        return "โรงพยาบาลชุมชน";
+      case HospitalType.clinic:
+        return "คลินิก";
+      case HospitalType.specialized:
+        return "โรงพยาบาลเฉพาะทาง";
+      case HospitalType.militaryPolice:
+        return "โรงพยาบาลทหาร/ตำรวจ";
+      case HospitalType.veterinary:
+        return "โรงพยาบาลสัตว์";
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     MediaQueryData mediaQuery = MediaQuery.of(context);
     ThemeData theme = Theme.of(context);
-    RxBool showBorder = false.obs;
 
     return DraggableScrollableSheet(
       expand: false,
@@ -25,7 +44,7 @@ class HospitalScreen extends StatelessWidget {
         return Container(
           width: double.infinity,
           decoration: BoxDecoration(
-            color: theme.colorScheme.surface,
+            color: theme.colorScheme.surfaceContainerLowest,
             borderRadius: const BorderRadius.vertical(top: Radius.circular(18)),
           ),
           child: SafeArea(
@@ -122,8 +141,8 @@ class HospitalScreen extends StatelessWidget {
           Expanded(
             flex: 0,
             child: IconButton(
-              onPressed: () => Get.toNamed('/form'),
-              icon: const Icon(Icons.edit_rounded),
+              onPressed: () => Get.toNamed('/form', arguments: hospital),
+              icon: const Icon(Icons.edit),
               style: IconButton.styleFrom(
                 backgroundColor: theme.colorScheme.surfaceContainerLow,
               ),
@@ -133,7 +152,7 @@ class HospitalScreen extends StatelessWidget {
             flex: 0,
             child: IconButton(
               onPressed: () => Get.back(),
-              icon: const Icon(Icons.close_rounded),
+              icon: const Icon(Icons.close),
               style: IconButton.styleFrom(
                 backgroundColor: theme.colorScheme.surfaceContainerLow,
               ),
@@ -148,60 +167,143 @@ class HospitalScreen extends StatelessWidget {
     required HospitalModel hospital,
     required ThemeData theme,
   }) {
+    final Rxn<PageController> pageController = Rxn<PageController>(
+      PageController(initialPage: 0),
+    );
+    final currentPageIndex = 0.obs;
     return SizedBox(
       height: 200,
-      child: PageView.builder(
-        itemCount: hospital.images.length,
-        physics: const BouncingScrollPhysics(),
-        itemBuilder: (context, index) {
-          return Container(
-            margin: const EdgeInsets.symmetric(horizontal: 4),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(12),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withAlpha((0.1 * 255).toInt()),
-                  blurRadius: 8,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-            ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(12),
-              child: GestureDetector(
-                onTap: () => OverlayUtility.showImage(hospital.images[index]),
-                child: Image.network(
-                  hospital.images[index],
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) {
-                    return Container(
-                      color: theme.colorScheme.surfaceContainerLow,
-                      child: Icon(
-                        Icons.image_not_supported,
-                        size: 48,
-                        color: theme.colorScheme.onSurfaceVariant,
+      child: Stack(
+        children: [
+          Positioned.fill(
+            child: PageView.builder(
+              controller: pageController.value,
+              itemCount: hospital.images.length,
+              physics: const BouncingScrollPhysics(),
+              onPageChanged: (index) {
+                currentPageIndex.value = index;
+              },
+              itemBuilder: (context, index) {
+                return Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 4),
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.surfaceContainerLow,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: GestureDetector(
+                      onTap: () =>
+                          OverlayUtility.showImage(hospital.images[index].path),
+                      child: Image.network(
+                        hospital.images[index].path,
+                        fit: BoxFit.cover,
+                        loadingBuilder: (context, child, loadingProgress) {
+                          if (loadingProgress == null) return child;
+                          return Container(
+                            color: theme.colorScheme.surfaceContainerLow,
+                            child: Center(
+                              child: CircularProgressIndicator(
+                                value:
+                                    loadingProgress.expectedTotalBytes != null
+                                    ? loadingProgress.cumulativeBytesLoaded /
+                                          loadingProgress.expectedTotalBytes!
+                                    : null,
+                                color: theme.colorScheme.primary,
+                              ),
+                            ),
+                          );
+                        },
+                        errorBuilder: (context, error, stackTrace) {
+                          return Container(
+                            color: theme.colorScheme.surfaceContainerLow,
+                            child: Icon(
+                              Icons.image_not_supported,
+                              size: 48,
+                              color: theme.colorScheme.surfaceContainer,
+                            ),
+                          );
+                        },
                       ),
-                    );
-                  },
-                  loadingBuilder: (context, child, loadingProgress) {
-                    if (loadingProgress == null) return child;
-                    return Container(
-                      color: theme.colorScheme.surfaceContainerLow,
-                      child: Center(
-                        child: CircularProgressIndicator(
-                          value: loadingProgress.expectedTotalBytes != null
-                              ? loadingProgress.cumulativeBytesLoaded /
-                                    loadingProgress.expectedTotalBytes!
-                              : null,
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+
+          Obx(() {
+            return Positioned(
+              bottom: 8,
+              left: 0,
+              right: 0,
+              child: Center(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withAlpha((0.5 * 255).toInt()),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: List.generate(
+                      hospital.images.length,
+                      (index) => GestureDetector(
+                        onTap: () {
+                          pageController.value?.animateToPage(
+                            index,
+                            duration: const Duration(milliseconds: 300),
+                            curve: Curves.easeInOut,
+                          );
+                        },
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 200),
+                          width: currentPageIndex.value == index ? 20 : 8,
+                          height: 8,
+                          margin: const EdgeInsets.symmetric(horizontal: 2),
+                          decoration: BoxDecoration(
+                            color: currentPageIndex.value == index
+                                ? Colors.white
+                                : Colors.white.withAlpha((0.5 * 255).toInt()),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
                         ),
                       ),
-                    );
-                  },
+                    ),
+                  ),
                 ),
               ),
+            );
+          }),
+          if (hospital.images.length > 1)
+            Positioned(
+              top: 8,
+              right: 8,
+              child: Obx(() {
+                return Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withAlpha((0.5 * 255).toInt()),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    '${currentPageIndex.value + 1}/${hospital.images.length}',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                );
+              }),
             ),
-          );
-        },
+        ],
       ),
     );
   }
@@ -235,23 +337,23 @@ class HospitalScreen extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 12),
-            Text(
+            SelectableText(
               hospital.description,
               style: theme.textTheme.bodyMedium,
               textAlign: TextAlign.justify,
             ),
             const SizedBox(height: 8),
             Container(
+              width: double.infinity,
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
-                color: theme.colorScheme.primary,
+                color: theme.colorScheme.surfaceContainer,
                 borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: theme.colorScheme.onInverseSurface),
               ),
-              child: Text(
-                'ประเภท: ${controller.getHospitalTypeText(hospital.type)}',
-                style: theme.textTheme.labelMedium?.copyWith(
-                  color: theme.colorScheme.onPrimary,
-                ),
+              child: SelectableText(
+                'ประเภท: ${_getHospitalTypeText(hospital.type)}',
+                style: theme.textTheme.labelMedium,
               ),
             ),
           ],
@@ -286,10 +388,12 @@ class HospitalScreen extends StatelessWidget {
             ),
             const SizedBox(height: 12),
             Container(
+              width: double.infinity,
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: theme.colorScheme.primary,
+                color: theme.colorScheme.surfaceContainer,
                 borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: theme.colorScheme.onInverseSurface),
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -297,73 +401,13 @@ class HospitalScreen extends StatelessWidget {
                   Text(
                     'เปิด: ${hospital.opening} น.',
                     style: theme.textTheme.bodyMedium?.copyWith(
-                      color: theme.colorScheme.onPrimary,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
                   Text(
                     'ปิด: ${hospital.closing} น.',
                     style: theme.textTheme.bodyMedium?.copyWith(
-                      color: theme.colorScheme.onPrimary,
                       fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildContactSection({
-    required HospitalModel hospital,
-    required ThemeData theme,
-  }) {
-    return Card(
-      elevation: 0,
-      color: theme.colorScheme.surfaceContainerLow,
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Icon(
-                  Icons.contact_phone,
-                  color: theme.iconTheme.color,
-                  size: 20,
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  'ติดต่อ',
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: theme.colorScheme.primary,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.phone,
-                    color: theme.colorScheme.onPrimary,
-                    size: 18,
-                  ),
-                  const SizedBox(width: 8),
-                  SelectableText(
-                    hospital.phoneNumber,
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      color: theme.colorScheme.onPrimary,
                     ),
                   ),
                 ],
@@ -400,12 +444,63 @@ class HospitalScreen extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 12),
-            Text(hospital.address, style: theme.textTheme.bodyMedium),
+            SelectableText(hospital.address, style: theme.textTheme.bodyMedium),
             const SizedBox(height: 8),
-            Text(
-              'พิกัด: ${hospital.latitude.toStringAsFixed(6)}, ${hospital.longitude.toStringAsFixed(6)}',
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: theme.colorScheme.onSurfaceVariant,
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                color: theme.colorScheme.surfaceContainer,
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: theme.colorScheme.onInverseSurface),
+              ),
+              child: SelectableText(
+                'ตำแหน่ง: ${hospital.latitude.toStringAsFixed(6)}, ${hospital.longitude.toStringAsFixed(6)}',
+                style: theme.textTheme.bodySmall,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildContactSection({
+    required HospitalModel hospital,
+    required ThemeData theme,
+  }) {
+    return Card(
+      elevation: 0,
+      color: theme.colorScheme.surfaceContainerLow,
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.phone, color: theme.iconTheme.color, size: 20),
+                const SizedBox(width: 8),
+                Text(
+                  'ติดต่อ',
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: theme.colorScheme.surfaceContainer,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: theme.colorScheme.onInverseSurface),
+              ),
+              child: SelectableText(
+                hospital.phoneNumber,
+                style: theme.textTheme.bodyMedium,
               ),
             ),
           ],

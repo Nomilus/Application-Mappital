@@ -1,7 +1,9 @@
 import 'dart:async';
 import 'dart:io';
-import 'package:application_mappital/public/model/hospital_model.dart';
-import 'package:application_mappital/utility/snackbar_utility.dart';
+import 'package:application_mappital/core/model/hospital_model.dart';
+import 'package:application_mappital/core/utility/snackbar_utility.dart';
+import 'package:application_mappital/public/service/auth_service.dart';
+import 'package:application_mappital/public/service/hospital_service.dart';
 import 'package:flutter/material.dart' hide DatePickerTheme;
 import 'package:flutter_datetime_picker_plus/flutter_datetime_picker_plus.dart';
 import 'package:get/get.dart';
@@ -11,10 +13,15 @@ import 'package:image_picker/image_picker.dart';
 class FormController extends GetxController {
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
 
+  final HospitalService _hospitalService = Get.find<HospitalService>();
+  final AuthService _authService = Get.find<AuthService>();
+
+  final HospitalModel? hospitalModel = Get.arguments;
+
   final Rxn<Completer<GoogleMapController>?> mapController =
       Rxn<Completer<GoogleMapController>>(Completer());
   final List<TextEditingController> listTextController = List.generate(
-    20,
+    6,
     (index) => TextEditingController(),
   );
   final Rxn<Set<Marker>?> markers = Rxn<Set<Marker>>({});
@@ -22,13 +29,29 @@ class FormController extends GetxController {
   final RxBool isFocusMap = false.obs;
   final RxBool isLoading = false.obs;
   final Rxn<LatLng> selectedLocation = Rxn<LatLng>();
-  final Rxn<List<File>> listImage = Rxn<List<File>>([]);
-  final Rx<HospitalType> selectedHospitalType = HospitalType.government.obs;
+  final Rxn<List<dynamic>> listImage = Rxn<List<dynamic>>([]);
+  Rx<HospitalType> selectedHospitalType = HospitalType.government.obs;
 
   @override
   void onInit() {
     super.onInit();
-    if (listTextController.length >= 6) {}
+    listTextController[0].text = hospitalModel?.title ?? '';
+    listTextController[1].text = hospitalModel?.description ?? '';
+    listTextController[2].text = hospitalModel?.address ?? '';
+    listTextController[3].text = hospitalModel?.phoneNumber ?? '';
+    listTextController[4].text = hospitalModel?.opening ?? '';
+    listTextController[5].text = hospitalModel?.closing ?? '';
+    selectedHospitalType = (hospitalModel?.type ?? HospitalType.government).obs;
+    if (hospitalModel?.latitude != null && hospitalModel?.longitude != null) {
+      final location = LatLng(
+        hospitalModel?.latitude ?? 13.7563,
+        hospitalModel?.longitude ?? 100.5018,
+      );
+      addMarker(location);
+      moveToLocation(location);
+    }
+    listImage.value =
+        hospitalModel?.images.map((item) => item.path).toList() ?? [];
   }
 
   void addMarker(LatLng location) {
@@ -41,6 +64,11 @@ class FormController extends GetxController {
 
     selectedLocation.value = location;
     markers.refresh();
+  }
+
+  Future<void> moveToLocation(LatLng location) async {
+    final GoogleMapController controller = await mapController.value!.future;
+    await controller.animateCamera(CameraUpdate.newLatLngZoom(location, 16));
   }
 
   Future<void> upLoadImage() async {
@@ -60,12 +88,14 @@ class FormController extends GetxController {
     if (listImage.value != null &&
         index >= 0 &&
         index < listImage.value!.length) {
-      final File fileToDelete = listImage.value![index];
-      final updatedList = List<File>.from(listImage.value!);
+      final dynamic fileToDelete = listImage.value![index];
+      final updatedList = List<dynamic>.from(listImage.value!);
       updatedList.removeAt(index);
       listImage(updatedList);
       listImage.refresh();
-      _deleteFileIfTemporary(fileToDelete);
+      if (fileToDelete is File) {
+        _deleteFileIfTemporary(fileToDelete);
+      }
     }
   }
 
@@ -145,6 +175,26 @@ class FormController extends GetxController {
     try {
       isLoading(true);
 
+      if (_authService.currentUser.value != null) {
+        _hospitalService.createHospital(
+          userId: _authService.currentUser.value?.id ?? '',
+          title: listTextController[0].text,
+          description: listTextController[1].text,
+          address: listTextController[2].text,
+          latitude: selectedLocation.value?.latitude ?? 0,
+          longitude: selectedLocation.value?.longitude ?? 0,
+          opening: listTextController[4].text,
+          closing: listTextController[5].text,
+          images:
+              listImage.value
+                  ?.whereType<File>()
+                  .map((item) => item.path)
+                  .toList() ??
+              [],
+          type: selectedHospitalType.value,
+          phoneNumber: listTextController[3].text,
+        );
+      }
       SnackbarUtility.success(
         title: 'บันทึกสำเร็จ',
         message: 'ข้อมูลโรงพยาบาลถูกบันทึกเรียบร้อยแล้ว',
@@ -167,6 +217,8 @@ class FormController extends GetxController {
     }
     markers.value?.clear();
     markers.refresh();
+    listImage.value?.clear();
+    listImage.refresh();
     selectedLocation.value = null;
     isFocusMap.value = false;
     selectedHospitalType.value = HospitalType.government;

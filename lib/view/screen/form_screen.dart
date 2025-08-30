@@ -1,5 +1,7 @@
-import 'package:application_mappital/public/model/hospital_model.dart';
-import 'package:application_mappital/utility/overlay_utility.dart';
+import 'dart:io';
+
+import 'package:application_mappital/core/model/hospital_model.dart';
+import 'package:application_mappital/core/utility/overlay_utility.dart';
 import 'package:application_mappital/view/event/form_controller.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
@@ -11,23 +13,24 @@ class FormScreen extends StatelessWidget {
   FormScreen({super.key});
 
   final FormController controller = Get.put(FormController());
+  final RxBool showBorder = false.obs;
 
   @override
   Widget build(BuildContext context) {
     ThemeData theme = Theme.of(context);
-    RxBool showBorder = false.obs;
 
     return Scaffold(
+      backgroundColor: theme.colorScheme.surfaceContainerLowest,
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(kToolbarHeight),
         child: Obx(
           () => AppBar(
             automaticallyImplyLeading: false,
             leading: IconButton(
-              icon: const Icon(Icons.arrow_back_rounded),
+              icon: const Icon(Icons.arrow_back),
               onPressed: () => Get.back(),
             ),
-            backgroundColor: theme.colorScheme.surface,
+            backgroundColor: theme.colorScheme.surfaceContainerLowest,
             surfaceTintColor: Colors.transparent,
             title: const Text('สร้าง'),
             elevation: 0,
@@ -85,6 +88,7 @@ class FormScreen extends StatelessWidget {
                       control: controller.listTextController[0],
                       context: context,
                       label: 'ชื่อโรงพยาบาล',
+                      hint: 'โรงพยาบาล',
                       isRequired: true,
                       validator: (value) {
                         if (value == null || value.trim().isEmpty) {
@@ -98,6 +102,7 @@ class FormScreen extends StatelessWidget {
                       control: controller.listTextController[1],
                       context: context,
                       label: 'คำอธิบาย',
+                      hint: 'ข้อมูลเกียวกับโรงพยาบาล',
                       maxLines: 3,
                     ),
                     const SizedBox(height: 16),
@@ -105,12 +110,14 @@ class FormScreen extends StatelessWidget {
                       control: controller.listTextController[2],
                       context: context,
                       label: 'ที่อยู่',
+                      hint: 'เลขที่,หมู่,ถนน,ตำบล,อําเภอ,จังหวัด',
                       maxLines: 3,
                     ),
                     const SizedBox(height: 16),
                     _buildTextInput(
-                      control: controller.listTextController[5],
+                      control: controller.listTextController[3],
                       context: context,
+                      maxLength: 10,
                       label: 'เบอร์โทรศัพท์',
                       hint: '000-000-0000',
                     ),
@@ -123,7 +130,7 @@ class FormScreen extends StatelessWidget {
                           child: _buildTimeChanged(
                             context: context,
                             label: "เวลาเปิด",
-                            control: controller.listTextController[3],
+                            control: controller.listTextController[4],
                             isRequired: true,
                           ),
                         ),
@@ -132,7 +139,7 @@ class FormScreen extends StatelessWidget {
                           child: _buildTimeChanged(
                             context: context,
                             label: "เวลาปิด",
-                            control: controller.listTextController[4],
+                            control: controller.listTextController[5],
                             isRequired: true,
                           ),
                         ),
@@ -150,10 +157,12 @@ class FormScreen extends StatelessWidget {
                     const SizedBox(height: 16),
                     NotificationListener<ScrollNotification>(
                       onNotification: (scrollNotification) => true,
-                      child: _buildInputImage(
-                        context: context,
-                        label: "แนบรูปภาพ",
-                      ),
+                      child: Obx(() {
+                        return _buildInputImage(
+                          context: context,
+                          label: "แนบรูปภาพ",
+                        );
+                      }),
                     ),
                     const SizedBox(height: 32),
                   ],
@@ -185,10 +194,12 @@ class FormScreen extends StatelessWidget {
           () => DropdownButtonFormField<HospitalType>(
             value: controller.selectedHospitalType.value,
             decoration: InputDecoration(
+              filled: true,
+              fillColor: theme.colorScheme.surfaceContainerLow,
               hintText: 'เลือกประเภทโรงพยาบาล',
               hintStyle: theme.textTheme.bodyMedium,
               prefixIcon: Icon(
-                Icons.local_hospital_rounded,
+                Icons.local_hospital,
                 color: theme.iconTheme.color,
               ),
               border: theme.inputDecorationTheme.border,
@@ -227,7 +238,7 @@ class FormScreen extends StatelessWidget {
             dropdownColor: theme.colorScheme.surface,
             style: theme.textTheme.bodyMedium,
             icon: Icon(
-              Icons.keyboard_arrow_down_rounded,
+              Icons.keyboard_arrow_down,
               color: theme.colorScheme.onSurface,
             ),
           ),
@@ -240,6 +251,7 @@ class FormScreen extends StatelessWidget {
     required BuildContext context,
     required TextEditingController control,
     int maxLines = 1,
+    int? maxLength,
     String? label,
     String? hint,
     Icon? icon,
@@ -270,7 +282,7 @@ class FormScreen extends StatelessWidget {
                 child: Tooltip(
                   message: tip ?? '',
                   child: Icon(
-                    Icons.info_outline_rounded,
+                    Icons.info_outline,
                     size: theme.textTheme.bodyLarge!.fontSize,
                   ),
                 ),
@@ -281,10 +293,13 @@ class FormScreen extends StatelessWidget {
         TextFormField(
           controller: control,
           maxLines: maxLines,
+          maxLength: maxLength,
           validator: validator,
           onTapOutside: (event) =>
               FocusManager.instance.primaryFocus?.unfocus(),
           decoration: InputDecoration(
+            filled: true,
+            fillColor: theme.colorScheme.surfaceContainerLow,
             prefixIcon: icon,
             suffixIcon: maxLines == 1
                 ? ValueListenableBuilder<TextEditingValue>(
@@ -293,7 +308,7 @@ class FormScreen extends StatelessWidget {
                       if (value.text.isNotEmpty) {
                         return IconButton(
                           onPressed: control.clear,
-                          icon: const Icon(Icons.close_rounded),
+                          icon: const Icon(Icons.close),
                         );
                       }
                       return const SizedBox.shrink();
@@ -343,7 +358,7 @@ class FormScreen extends StatelessWidget {
                 child: Tooltip(
                   message: tip ?? '',
                   child: Icon(
-                    Icons.info_outline_rounded,
+                    Icons.info_outline,
                     size: theme.textTheme.bodyLarge!.fontSize,
                   ),
                 ),
@@ -357,6 +372,7 @@ class FormScreen extends StatelessWidget {
           child: Container(
             padding: const EdgeInsets.all(3),
             decoration: BoxDecoration(
+              color: theme.colorScheme.surfaceContainerLow,
               border: controller.isFocusMap.value
                   ? Border.all(
                       color: theme.colorScheme.primaryContainer,
@@ -371,17 +387,17 @@ class FormScreen extends StatelessWidget {
                 aspectRatio: 1.0,
                 child: Obx(() {
                   return GoogleMap(
-                    onMapCreated: (GoogleMapController mapController) {
+                    onMapCreated: (value) {
                       if (!controller.mapController.value!.isCompleted) {
-                        controller.mapController.value!.complete(mapController);
+                        controller.mapController.value!.complete(value);
                       }
                     },
+                    onTap: controller.addMarker,
                     initialCameraPosition: const CameraPosition(
                       target: LatLng(13.7563, 100.5018),
                       zoom: 11,
                     ),
                     markers: controller.markers.value ?? {},
-                    onTap: controller.addMarker,
                     gestureRecognizers: <Factory<OneSequenceGestureRecognizer>>{
                       Factory<PanGestureRecognizer>(
                         () => PanGestureRecognizer(),
@@ -404,7 +420,10 @@ class FormScreen extends StatelessWidget {
             return Padding(
               padding: const EdgeInsets.only(top: 8.0),
               child: Container(
-                padding: const EdgeInsets.all(8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
                 decoration: BoxDecoration(
                   color: theme.colorScheme.surfaceContainer,
                   border: Border.all(color: theme.colorScheme.onInverseSurface),
@@ -415,7 +434,7 @@ class FormScreen extends StatelessWidget {
                     const Icon(Icons.location_on, size: 16),
                     const SizedBox(width: 4),
                     Expanded(
-                      child: Text(
+                      child: SelectableText(
                         'ตำแหน่ง: ${location.latitude.toStringAsFixed(6)}, ${location.longitude.toStringAsFixed(6)}',
                         style: theme.textTheme.bodySmall,
                       ),
@@ -461,7 +480,7 @@ class FormScreen extends StatelessWidget {
                 child: Tooltip(
                   message: tip ?? '',
                   child: Icon(
-                    Icons.info_outline_rounded,
+                    Icons.info_outline,
                     size: theme.textTheme.bodyLarge!.fontSize,
                   ),
                 ),
@@ -484,12 +503,11 @@ class FormScreen extends StatelessWidget {
             enabled: false,
             style: theme.textTheme.bodyMedium,
             decoration: InputDecoration(
+              filled: true,
+              fillColor: theme.colorScheme.surfaceContainerLow,
               hintText: "00:00",
               hintStyle: theme.textTheme.bodyMedium,
-              suffixIcon: Icon(
-                Icons.access_time_rounded,
-                color: theme.iconTheme.color,
-              ),
+              suffixIcon: Icon(Icons.access_time, color: theme.iconTheme.color),
               border: theme.inputDecorationTheme.border,
               focusedBorder: theme.inputDecorationTheme.focusedBorder,
               enabledBorder: theme.inputDecorationTheme.enabledBorder,
@@ -523,7 +541,7 @@ class FormScreen extends StatelessWidget {
                 Tooltip(
                   message: tip,
                   child: Icon(
-                    Icons.info_outline_rounded,
+                    Icons.info_outline,
                     size: theme.textTheme.bodyLarge?.fontSize ?? 16,
                   ),
                 ),
@@ -549,7 +567,7 @@ class FormScreen extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Icon(
-                        Icons.add_photo_alternate_rounded,
+                        Icons.add_photo_alternate,
                         color: theme.iconTheme.color,
                         size: 30,
                       ),
@@ -574,7 +592,10 @@ class FormScreen extends StatelessWidget {
                           child: Stack(
                             children: [
                               Positioned.fill(
-                                child: Image.file(image, fit: BoxFit.cover),
+                                child: _buildImageWidget(
+                                  image: image,
+                                  theme: theme,
+                                ),
                               ),
                               Positioned(
                                 top: 4,
@@ -594,7 +615,7 @@ class FormScreen extends StatelessWidget {
                                     onPressed: () =>
                                         controller.unDoImage(index),
                                     icon: Icon(
-                                      Icons.clear_rounded,
+                                      Icons.clear,
                                       color: theme.colorScheme.error,
                                       size: 18,
                                     ),
@@ -613,5 +634,51 @@ class FormScreen extends StatelessWidget {
         ),
       ],
     );
+  }
+
+  Widget _buildImageWidget({required dynamic image, required ThemeData theme}) {
+    if (image is String && image.isNotEmpty) {
+      return Positioned.fill(
+        child: Image.network(
+          image,
+          fit: BoxFit.cover,
+          errorBuilder: (context, error, stackTrace) {
+            return Container(
+              color: theme.colorScheme.surfaceContainerLow,
+              child: Icon(
+                Icons.image_not_supported,
+                color: theme.colorScheme.surfaceContainer,
+              ),
+            );
+          },
+        ),
+      );
+    } else if (image is File) {
+      return Positioned.fill(
+        child: Image.file(
+          image,
+          fit: BoxFit.cover,
+          errorBuilder: (context, error, stackTrace) {
+            return Container(
+              color: theme.colorScheme.surfaceContainerLow,
+              child: Icon(
+                Icons.image_not_supported,
+                color: theme.colorScheme.surfaceContainer,
+              ),
+            );
+          },
+        ),
+      );
+    } else {
+      return Positioned.fill(
+        child: Container(
+          color: theme.colorScheme.surfaceContainerLow,
+          child: Icon(
+            Icons.image_not_supported,
+            color: theme.colorScheme.surfaceContainer,
+          ),
+        ),
+      );
+    }
   }
 }

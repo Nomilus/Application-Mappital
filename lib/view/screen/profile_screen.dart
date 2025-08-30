@@ -12,7 +12,10 @@ class ProfileScreen extends StatelessWidget {
     ThemeData theme = Theme.of(context);
 
     return Scaffold(
+      backgroundColor: theme.colorScheme.surfaceContainerLowest,
       appBar: AppBar(
+        surfaceTintColor: Colors.transparent,
+        backgroundColor: theme.colorScheme.surfaceContainerLowest,
         automaticallyImplyLeading: false,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_rounded),
@@ -27,7 +30,9 @@ class ProfileScreen extends StatelessWidget {
             Center(
               child: CircleAvatar(
                 radius: 40,
-                foregroundImage: NetworkImage(controller.user.value!.avatar),
+                foregroundImage: NetworkImage(
+                  controller.user.value?.avatar ?? "",
+                ),
                 child: Text(controller.user.value?.name.substring(0, 1) ?? "N"),
               ),
             ),
